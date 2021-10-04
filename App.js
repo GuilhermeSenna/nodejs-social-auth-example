@@ -4,6 +4,8 @@ const mysql = require('mysql2');
 const cookieParser = require('cookie-parser');
 const path = require('path');
 const session = require('express-session');
+const fs = require("fs");
+const https = require("https");
 const passport = require('passport');
 const passportConfig = require('./config/passport')(passport);
 const flash = require('express-flash-messages');
@@ -33,17 +35,23 @@ app.set('port', process.env.PORT);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 app.use(cookieParser());
-app.use(bodyParser.urlencoded({ extended: true  }));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
     secret: 'keyboard cat',
     saveUninitialized: true,
     resave: true
-  }));
+}));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
+
+// app.enable('trust proxy')
+// app.use((req, res, next) => {
+//     console.log('aqui')
+//     req.secure ? next() : res.redirect('https://' + req.headers.host + req.url)
+// })
 
 app.get('/', getHomePage);
 
@@ -54,11 +62,18 @@ app.get('/logout', handleLogout);
 app.get('/register', getRegister);
 app.post('/register', submitRegister);
 
-app.get('/auth/facebook', getFacebookLogin);
+app.get('/auth/facebook', passport.authorize('facebook', { scope: ['profile', 'email'] }), getFacebookLogin);
 app.get('/auth/facebook/callback', handleFacebookLogin);
 app.get('/auth/google', getGoogleLogin);
 app.get('/auth/google/callback', handleGoogleLogin);
 
-app.listen(process.env.PORT, () => {
-    console.log(`server running on port: ${process.env.PORT}`);
-});
+const options = {
+    key: fs.readFileSync("certificado.key"),
+    cert: fs.readFileSync("certificado.cert")
+};
+
+https.createServer(options, app).listen(5000);
+
+// app.listen(process.env.PORT, () => {
+//     console.log(`server running on port: ${process.env.PORT}`);
+// });

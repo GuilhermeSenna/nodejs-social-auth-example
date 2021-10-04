@@ -26,12 +26,15 @@ module.exports = function (passport) {
         clientID: process.env.FACEBOOK_APP_ID,
         clientSecret: process.env.FACEBOOK_APP_SECRET,
         callbackURL: process.env.FACEBOOK_APP_CALLBACK_URL,
+        passReqToCallBack: true,
+        profileFields: ['id', 'displayName', 'name', 'gender', 'emails']
       },
       async function (accessToken, refreshToken, profile, cb) {
         const [user, status] = await User.findOrCreate({
           where: {
             social_user_id: profile.id,
             name: profile.displayName,
+            email: profile.emails[0].value,
             registration_type: "facebook",
           },
         });
@@ -73,10 +76,12 @@ module.exports = function (passport) {
         callbackURL: process.env.GOOGLE_APP_CALLBACK_URL,
       },
       async function (accessToken, refreshToken, profile, cb) {
+        console.log(profile);
         const [user, status] = await User.findOrCreate({
           where: {
             social_user_id: profile.id,
             name: profile.displayName,
+            email: profile.emails[0].value,
             registration_type: "google",
           },
         });
