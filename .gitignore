@@ -16,3 +16,4 @@ logs
 *.pub
 *.pem
 *.swp
+*.env
