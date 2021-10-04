@@ -12,6 +12,7 @@ logs
 *.crt
 *.csr
 *.key
+*.cert
 *.pub
 *.pem
 *.swp
